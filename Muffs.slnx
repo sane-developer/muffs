@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/host/">
+    <Project Path="host/Muffs.CLI/Muffs.CLI.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Muffs.Engine/Muffs.Engine.csproj" />
+  </Folder>
+</Solution>
