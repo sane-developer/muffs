@@ -1,26 +1,51 @@
 namespace Muffs.Engine.AST.Generator;
 
-public sealed record GeneratorOptions
+public sealed record ExpressionGeneratorOptions
 {
-    public Random Rng { get; set; }
+    public required Random Rng { get; init; }
 
-    public DepthOptions Depth { get; set; }
+    public required DepthOptions Depth { get; init; }
 
-    public ResultOptions Result { get; set; }
+    public required LengthOptions Length { get; init; }
+
+    public required OperandOptions Operand { get; init; }
 }
 
-public readonly record struct DepthOptions(int Minimum, int Maximum)
+public sealed record DepthOptions(int Minimum, int Maximum)
 {
     public static DepthOptions Create(int minimum, int maximum)
     {
         return new(minimum, maximum);
     }
+
+    public int Random(Random rng)
+    {
+        return rng.Next(Minimum, Maximum + 1);
+    }
 }
 
-public readonly record struct ResultOptions(int Minimum, int Maximum)
+public sealed record LengthOptions(int Minimum, int Maximum)
 {
-    public static ResultOptions Create(int minimum, int maximum)
+    public static LengthOptions Create(int minimum, int maximum)
     {
         return new(minimum, maximum);
+    }
+
+    public int Random(Random rng)
+    {
+        return rng.Next(Minimum, Maximum + 1);
+    }
+}
+
+public sealed record OperandOptions(int Minimum, int Maximum)
+{
+    public static OperandOptions Create(int minimum, int maximum)
+    {
+        return new(minimum, maximum);
+    }
+
+    public int Random(Random rng)
+    {
+        return rng.Next(Minimum, Maximum + 1);
     }
 }

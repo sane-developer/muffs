@@ -31,3 +31,11 @@ public sealed record Division(Symbol Lhs, Symbol Rhs) : Symbol()
         return new(lhs, rhs);
     }
 }
+
+public enum Operator
+{
+    Addition,
+    Subtraction,
+    Multiplication,
+    Division,
+}

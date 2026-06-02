@@ -2,13 +2,13 @@ using Muffs.Engine.AST.Expression;
 
 namespace Muffs.Engine.AST;
 
-public static class Evaluator
+public static class ExpressionEvaluator
 {
     public static int Evaluate(this Symbol root)
     {
         return root switch
         {
-            Number expression => expression.Value,
+            Number literal => literal.Value,
             Subtraction expression => expression.Subtract(),
             Multiplication expression => expression.Multiply(),
             Division expression => expression.Divide(),
