@@ -4,64 +4,110 @@ using Muffs.Engine.AST.Expression;
 
 namespace Muffs.Engine.AST.Generator;
 
-internal sealed class CompositionRegistry
+internal sealed class CompositionRegistry(FrozenDictionary<CompositionKey, ImmutableArray<CompositionOperands>> entries)
 {
-    private readonly FrozenDictionary<CompositionKey, ImmutableArray<Operands>> _entries;
-
-    private CompositionRegistry(FrozenDictionary<CompositionKey, ImmutableArray<Operands>> entries)
+    public ImmutableArray<CompositionOperands> Get(Operator handler, int result)
     {
-        _entries = entries;
+        var key = CompositionKey.Create(handler, result);
+
+        return entries.TryGetValue(key, out var compositions) ? compositions : [];
+    }
+}
+
+internal sealed class CompositionRegistryGenerator
+{
+    public static CompositionRegistry For(int minimum, int maximum)
+    {
+        var compositions = Enumerate(minimum, maximum);
+
+        var filtered = Filter(compositions, minimum, maximum);
+
+        var groups = Group(filtered);
+
+        var entries = groups.ToFrozenDictionary(
+            grouping => grouping.Key,
+            grouping => Map(grouping).ToImmutableArray()
+        );
+
+        return new CompositionRegistry(entries);
     }
 
-    public static CompositionRegistry Build(int minimum, int maximum)
+    private static IEnumerable<CompositionOperands> Map(IGrouping<CompositionKey, Composition> grouping)
     {
-        var entries = new Dictionary<CompositionKey, List<Operands>>();
+        return grouping.Select(composition => CompositionOperands.Create(composition.Lhs, composition.Rhs));
+    }
 
-        void Add(Operator op, int result, int lhs, int rhs)
-        {
-            if (result < minimum || result > maximum)
-            {
-                return;
-            }
+    private static IEnumerable<IGrouping<CompositionKey, Composition>> Group(IEnumerable<Composition> filtered)
+    {
+        return filtered.GroupBy(composition => CompositionKey.Create(composition.Handler, composition.Result));
+    }
 
-            var key = new CompositionKey(result, op);
+    private static IEnumerable<Composition> Filter(IEnumerable<Composition> compositions, int minimum, int maximum)
+    {
+        return compositions.Where(composition => composition.Result >= minimum && composition.Result <= maximum);
+    }
 
-            if (!entries.TryGetValue(key, out var bucket))
-            {
-                entries[key] = bucket = [];
-            }
-
-            bucket.Add(new Operands(lhs, rhs));
-        }
-
+    private static IEnumerable<Composition> Enumerate(int minimum, int maximum)
+    {
         for (var lhs = minimum; lhs <= maximum; lhs++)
         {
             for (var rhs = minimum; rhs <= maximum; rhs++)
             {
-                Add(Operator.Addition, lhs + rhs, lhs, rhs);
-                Add(Operator.Subtraction, lhs - rhs, lhs, rhs);
-                Add(Operator.Multiplication, lhs * rhs, lhs, rhs);
+                yield return Composition.Addition(lhs, rhs);
 
-                if (rhs != 0 && lhs % rhs == 0)
+                yield return Composition.Subtraction(lhs, rhs);
+
+                yield return Composition.Multiplication(lhs, rhs);
+
+                if (IsPerfectDivisor(lhs, rhs))
                 {
-                    Add(Operator.Division, lhs / rhs, lhs, rhs);
+                    yield return Composition.Division(lhs, rhs);
                 }
             }
         }
-
-        var frozen = entries.ToFrozenDictionary(entry => entry.Key, entry => entry.Value.ToImmutableArray());
-
-        return new CompositionRegistry(frozen);
     }
 
-    public ImmutableArray<Operands> Get(int result, Operator op)
+    private static bool IsPerfectDivisor(int lhs, int rhs)
     {
-        return _entries.TryGetValue(new CompositionKey(result, op), out var compositions)
-            ? compositions
-            : ImmutableArray<Operands>.Empty;
+        return rhs != 0 && lhs % rhs == 0;
     }
 }
 
-internal readonly record struct CompositionKey(int Result, Operator Op);
+internal readonly record struct Composition(Operator Handler, int Lhs, int Rhs, int Result)
+{
+    public static Composition Addition(int lhs, int rhs)
+    {
+        return new Composition(Operator.Addition, lhs, rhs, lhs + rhs);
+    }
 
-internal readonly record struct Operands(int Lhs, int Rhs);
+    public static Composition Subtraction(int lhs, int rhs)
+    {
+        return new Composition(Operator.Subtraction, lhs, rhs, lhs - rhs);
+    }
+
+    public static Composition Multiplication(int lhs, int rhs)
+    {
+        return new Composition(Operator.Multiplication, lhs, rhs, lhs * rhs);
+    }
+
+    public static Composition Division(int lhs, int rhs)
+    {
+        return new Composition(Operator.Division, lhs, rhs, lhs / rhs);
+    }
+}
+
+internal readonly record struct CompositionOperands(int Lhs, int Rhs)
+{
+    public static CompositionOperands Create(int lhs, int rhs)
+    {
+        return new(lhs, rhs);
+    }
+}
+
+internal readonly record struct CompositionKey(Operator Handler, int Result)
+{
+    public static CompositionKey Create(Operator handler, int result)
+    {
+        return new(handler, result);
+    }
+}

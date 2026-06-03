@@ -4,7 +4,7 @@ namespace Muffs.Engine.AST.Generator;
 
 public sealed class ExpressionGenerator(ExpressionGeneratorOptions options)
 {
-    private readonly CompositionRegistry _registry = CompositionRegistry.Build(
+    private readonly CompositionRegistry _registry = CompositionRegistry.For(
         minimum: options.Operand.Minimum,
         maximum: options.Operand.Maximum
     );
@@ -38,7 +38,7 @@ public sealed class ExpressionGenerator(ExpressionGeneratorOptions options)
 
         var handler = GetRandomOperator();
 
-        var compositions = _registry.Get(value, handler);
+        var compositions = _registry.Get(handler, value);
 
         if (compositions.IsEmpty)
         {
