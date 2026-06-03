@@ -1,10 +1,11 @@
 using Muffs.Engine.AST.Expression;
+using Muffs.Engine.AST.Generator.Cache;
 
 namespace Muffs.Engine.AST.Generator;
 
 public sealed class ExpressionGenerator(ExpressionGeneratorOptions options)
 {
-    private readonly CompositionRegistry _registry = CompositionRegistry.For(
+    private readonly CompositionRegistry _registry = CompositionRegistryGenerator.For(
         minimum: options.Operand.Minimum,
         maximum: options.Operand.Maximum
     );
