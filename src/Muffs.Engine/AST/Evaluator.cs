@@ -4,7 +4,7 @@ namespace Muffs.Engine.AST;
 
 public static class ExpressionEvaluator
 {
-    public static int Evaluate(this Symbol root)
+    public static int Evaluate(this Glyph root)
     {
         return root switch
         {
@@ -43,7 +43,7 @@ file static class Operator
 
 file static class Panic
 {
-    public static int Unresolvable(this Symbol expression)
+    public static int Unresolvable(this Glyph expression)
     {
         var type = expression.GetType().FullName;
 

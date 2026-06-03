@@ -3,26 +3,26 @@ using Muffs.Engine.AST.Expression;
 
 namespace Muffs.Engine.AST.Generator.Cache;
 
-internal readonly record struct Composition(Symbol.Operator Function, int Lhs, int Rhs, int Result)
+internal readonly record struct Composition(Glyph.Operator Function, int Lhs, int Rhs, int Result)
 {
     public static Composition Addition(int lhs, int rhs)
     {
-        return new Composition(Symbol.Operator.Addition, lhs, rhs, lhs + rhs);
+        return new Composition(Glyph.Operator.Addition, lhs, rhs, lhs + rhs);
     }
 
     public static Composition Subtraction(int lhs, int rhs)
     {
-        return new Composition(Symbol.Operator.Subtraction, lhs, rhs, lhs - rhs);
+        return new Composition(Glyph.Operator.Subtraction, lhs, rhs, lhs - rhs);
     }
 
     public static Composition Multiplication(int lhs, int rhs)
     {
-        return new Composition(Symbol.Operator.Multiplication, lhs, rhs, lhs * rhs);
+        return new Composition(Glyph.Operator.Multiplication, lhs, rhs, lhs * rhs);
     }
 
     public static Composition Division(int lhs, int rhs)
     {
-        return new Composition(Symbol.Operator.Division, lhs, rhs, lhs / rhs);
+        return new Composition(Glyph.Operator.Division, lhs, rhs, lhs / rhs);
     }
 }
 
@@ -34,9 +34,9 @@ internal readonly record struct CompositionOperands(int Lhs, int Rhs)
     }
 }
 
-internal readonly record struct CompositionKey(Symbol.Operator Function, int Result)
+internal readonly record struct CompositionKey(Glyph.Operator Function, int Result)
 {
-    public static CompositionKey Create(Symbol.Operator function, int result)
+    public static CompositionKey Create(Glyph.Operator function, int result)
     {
         return new(function, result);
     }

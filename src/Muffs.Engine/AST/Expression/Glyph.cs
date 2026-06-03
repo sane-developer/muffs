@@ -1,6 +1,6 @@
 namespace Muffs.Engine.AST.Expression;
 
-public abstract record Symbol
+public abstract record Glyph
 {
     public enum Operator
     {

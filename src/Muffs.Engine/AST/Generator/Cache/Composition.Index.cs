@@ -5,7 +5,7 @@ namespace Muffs.Engine.AST.Generator.Cache;
 
 internal sealed class CompositionIndex(FrozenDictionary<CompositionKey, CompositionSet> entries)
 {
-    public CompositionSet Get(Symbol.Operator function, int result)
+    public CompositionSet Get(Glyph.Operator function, int result)
     {
         var key = CompositionKey.Create(function, result);
 

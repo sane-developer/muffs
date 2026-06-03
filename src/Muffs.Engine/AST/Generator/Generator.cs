@@ -7,11 +7,11 @@ public sealed class ExpressionGenerator(ExpressionGeneratorOptions options)
 {
     private readonly CompositionIndex _index = CompositionIndexFactory.For(options.Operands, options.Result);
 
-    public Symbol Generate()
+    public Glyph Generate()
     {
         var length = options.Length.Random(options.Rng);
 
-        var operands = new Stack<Symbol>(length);
+        var operands = new Stack<Glyph>(length);
 
         for (var i = 0; i < length; i++)
         {
@@ -27,7 +27,7 @@ public sealed class ExpressionGenerator(ExpressionGeneratorOptions options)
         return Merge(operands);
     }
 
-    private Symbol Compose(int value, int depth)
+    private Glyph Compose(int value, int depth)
     {
         if (depth <= 0)
         {
@@ -52,7 +52,7 @@ public sealed class ExpressionGenerator(ExpressionGeneratorOptions options)
         return Join(function, left, right);
     }
 
-    private Symbol Merge(Stack<Symbol> operands)
+    private Glyph Merge(Stack<Glyph> operands)
     {
         var expression = operands.Pop();
 
@@ -68,24 +68,24 @@ public sealed class ExpressionGenerator(ExpressionGeneratorOptions options)
         return expression;
     }
 
-    private static Symbol Join(Symbol.Operator function, Symbol lhs, Symbol rhs)
+    private static Glyph Join(Glyph.Operator function, Glyph lhs, Glyph rhs)
     {
-        if (function is Symbol.Operator.Addition)
+        if (function is Glyph.Operator.Addition)
         {
             return Addition.From(lhs, rhs);
         }
 
-        if (function is Symbol.Operator.Subtraction)
+        if (function is Glyph.Operator.Subtraction)
         {
             return Subtraction.From(lhs, rhs);
         }
 
-        if (function is Symbol.Operator.Multiplication)
+        if (function is Glyph.Operator.Multiplication)
         {
             return Multiplication.From(lhs, rhs);
         }
 
-        if (function is Symbol.Operator.Division)
+        if (function is Glyph.Operator.Division)
         {
             return Division.From(lhs, rhs);
         }
@@ -93,39 +93,39 @@ public sealed class ExpressionGenerator(ExpressionGeneratorOptions options)
         return Panic.UnknownOperator(function);
     }
 
-    private Symbol.Operator GetSafeOperator()
+    private Glyph.Operator GetSafeOperator()
     {
         var position = options.Rng.Next(_safeOperators.Length);
 
         return _safeOperators[position];
     }
 
-    private Symbol.Operator GetRandomOperator()
+    private Glyph.Operator GetRandomOperator()
     {
         var position = options.Rng.Next(_operators.Length);
 
         return _operators[position];
     }
 
-    private static readonly Symbol.Operator[] _safeOperators =
+    private static readonly Glyph.Operator[] _safeOperators =
     [
-        Symbol.Operator.Addition,
-        Symbol.Operator.Subtraction,
-        Symbol.Operator.Multiplication,
+        Glyph.Operator.Addition,
+        Glyph.Operator.Subtraction,
+        Glyph.Operator.Multiplication,
     ];
 
-    private static readonly Symbol.Operator[] _operators =
+    private static readonly Glyph.Operator[] _operators =
     [
-        Symbol.Operator.Addition,
-        Symbol.Operator.Subtraction,
-        Symbol.Operator.Multiplication,
-        Symbol.Operator.Division,
+        Glyph.Operator.Addition,
+        Glyph.Operator.Subtraction,
+        Glyph.Operator.Multiplication,
+        Glyph.Operator.Division,
     ];
 }
 
 file static class Panic
 {
-    public static Symbol UnknownOperator(Symbol.Operator function)
+    public static Glyph UnknownOperator(Glyph.Operator function)
     {
         throw new ArgumentOutOfRangeException($"Unknown operator: {function}.");
     }

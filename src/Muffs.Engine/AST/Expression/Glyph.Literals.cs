@@ -1,6 +1,6 @@
 namespace Muffs.Engine.AST.Expression;
 
-public sealed record Number(int Value) : Symbol()
+public sealed record Number(int Value) : Glyph()
 {
     public static Number From(int value)
     {
