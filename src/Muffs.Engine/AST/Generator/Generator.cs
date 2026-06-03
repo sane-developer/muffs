@@ -5,10 +5,7 @@ namespace Muffs.Engine.AST.Generator;
 
 public sealed class ExpressionGenerator(ExpressionGeneratorOptions options)
 {
-    private readonly CompositionRegistry _registry = CompositionRegistryGenerator.For(
-        minimum: options.Operand.Minimum,
-        maximum: options.Operand.Maximum
-    );
+    private readonly CompositionIndex _index = CompositionIndexFactory.For(options.Operands, options.Result);
 
     public Symbol Generate()
     {
@@ -18,7 +15,7 @@ public sealed class ExpressionGenerator(ExpressionGeneratorOptions options)
 
         for (var i = 0; i < length; i++)
         {
-            var value = options.Operand.Random(options.Rng);
+            var value = options.Operands.Random(options.Rng);
 
             var depth = options.Depth.Random(options.Rng);
 
@@ -37,24 +34,22 @@ public sealed class ExpressionGenerator(ExpressionGeneratorOptions options)
             return Number.From(value);
         }
 
-        var handler = GetRandomOperator();
+        var function = GetRandomOperator();
 
-        var compositions = _registry.Get(handler, value);
+        var compositions = _index.Get(function, value);
 
-        if (compositions.IsEmpty)
+        if (compositions.IsEmpty())
         {
             return Number.From(value);
         }
 
-        var position = options.Rng.Next(compositions.Length);
+        var composition = compositions.Random(options.Rng);
 
-        var (lhs, rhs) = compositions[position];
+        var left = Compose(composition.Lhs, depth - 1);
 
-        var left = Compose(lhs, depth - 1);
+        var right = Compose(composition.Rhs, depth - 1);
 
-        var right = Compose(rhs, depth - 1);
-
-        return Join(handler, left, right);
+        return Join(function, left, right);
     }
 
     private Symbol Merge(Stack<Symbol> operands)
@@ -65,74 +60,73 @@ public sealed class ExpressionGenerator(ExpressionGeneratorOptions options)
         {
             var rhs = operands.Pop();
 
-            var handler = GetSafeOperator();
+            var function = GetSafeOperator();
 
-            expression = Join(handler, rhs, expression);
+            expression = Join(function, rhs, expression);
         }
 
         return expression;
     }
 
-    private static Symbol Join(Operator handler, Symbol lhs, Symbol rhs)
+    private static Symbol Join(Symbol.Operator function, Symbol lhs, Symbol rhs)
     {
-        if (handler is Operator.Addition)
+        if (function is Symbol.Operator.Addition)
         {
             return Addition.From(lhs, rhs);
         }
 
-        if (handler is Operator.Subtraction)
+        if (function is Symbol.Operator.Subtraction)
         {
             return Subtraction.From(lhs, rhs);
         }
 
-        if (handler is Operator.Multiplication)
+        if (function is Symbol.Operator.Multiplication)
         {
             return Multiplication.From(lhs, rhs);
         }
 
-        if (handler is Operator.Division)
+        if (function is Symbol.Operator.Division)
         {
             return Division.From(lhs, rhs);
         }
 
-        return Panic.UnknownOperator(handler);
+        return Panic.UnknownOperator(function);
     }
 
-
-    private Operator GetSafeOperator()
+    private Symbol.Operator GetSafeOperator()
     {
         var position = options.Rng.Next(_safeOperators.Length);
 
         return _safeOperators[position];
     }
 
-    private Operator GetRandomOperator()
+    private Symbol.Operator GetRandomOperator()
     {
         var position = options.Rng.Next(_operators.Length);
 
         return _operators[position];
     }
 
-    private static readonly Operator[] _safeOperators =
+    private static readonly Symbol.Operator[] _safeOperators =
     [
-        Operator.Addition,
-        Operator.Subtraction,
-        Operator.Multiplication,
+        Symbol.Operator.Addition,
+        Symbol.Operator.Subtraction,
+        Symbol.Operator.Multiplication,
     ];
 
-    private static readonly Operator[] _operators =
+    private static readonly Symbol.Operator[] _operators =
     [
-        Operator.Addition,
-        Operator.Subtraction,
-        Operator.Multiplication,
-        Operator.Division,
+        Symbol.Operator.Addition,
+        Symbol.Operator.Subtraction,
+        Symbol.Operator.Multiplication,
+        Symbol.Operator.Division,
     ];
 }
 
 file static class Panic
 {
-    public static Symbol UnknownOperator(Operator handler)
+    public static Symbol UnknownOperator(Symbol.Operator function)
     {
-        throw new ArgumentOutOfRangeException($"Unknown operator: {handler}.");
+        throw new ArgumentOutOfRangeException($"Unknown operator: {function}.");
     }
 }

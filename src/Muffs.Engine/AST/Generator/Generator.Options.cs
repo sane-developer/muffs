@@ -8,7 +8,9 @@ public sealed record ExpressionGeneratorOptions
 
     public required LengthOptions Length { get; init; }
 
-    public required OperandOptions Operand { get; init; }
+    public required ResultOptions Result { get; init; }
+
+    public required OperandsOptions Operands { get; init; }
 }
 
 public sealed record DepthOptions(int Minimum, int Maximum)
@@ -37,9 +39,22 @@ public sealed record LengthOptions(int Minimum, int Maximum)
     }
 }
 
-public sealed record OperandOptions(int Minimum, int Maximum)
+public sealed record OperandsOptions(int Minimum, int Maximum)
 {
-    public static OperandOptions Create(int minimum, int maximum)
+    public static OperandsOptions Create(int minimum, int maximum)
+    {
+        return new(minimum, maximum);
+    }
+
+    public int Random(Random rng)
+    {
+        return rng.Next(Minimum, Maximum + 1);
+    }
+}
+
+public sealed record ResultOptions(int Minimum, int Maximum)
+{
+    public static ResultOptions Create(int minimum, int maximum)
     {
         return new(minimum, maximum);
     }
